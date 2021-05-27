@@ -48,7 +48,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 int i =0;
 char buffer[50];
-int len,pwm_value_1,pwm_value_2,pwm_value_3,pwm_value_4;
+int len,pwm_value[4];
 char Rx_indx, Rx_data[2], Rx_Buffer[100], Transfer_cplt;
 /* USER CODE END PV */
 
@@ -135,19 +135,25 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		
-		pwm_value_1=((Rx_Buffer[1] - '0') * 100 )+((Rx_Buffer[2] - '0') * 10 )+(Rx_Buffer[3] - '0');
-		pwm_value_2=((Rx_Buffer[5] - '0') * 100 )+((Rx_Buffer[6] - '0') * 10 )+(Rx_Buffer[7] - '0');
-		pwm_value_3=((Rx_Buffer[9] - '0') * 100 )+((Rx_Buffer[10] - '0') * 10 )+(Rx_Buffer[11] - '0');
-		pwm_value_4=((Rx_Buffer[13] - '0') * 100 )+((Rx_Buffer[14] - '0') * 10 )+(Rx_Buffer[15] - '0');
+		pwm_value[0]=((Rx_Buffer[1] - '0') * 100 )+((Rx_Buffer[2] - '0') * 10 )+(Rx_Buffer[3] - '0');
+		pwm_value[1]=((Rx_Buffer[5] - '0') * 100 )+((Rx_Buffer[6] - '0') * 10 )+(Rx_Buffer[7] - '0');
+		pwm_value[2]=((Rx_Buffer[9] - '0') * 100 )+((Rx_Buffer[10] - '0') * 10 )+(Rx_Buffer[11] - '0');
+		pwm_value[3]=((Rx_Buffer[13] - '0') * 100 )+((Rx_Buffer[14] - '0') * 10 )+(Rx_Buffer[15] - '0');
 		//PWM values must be 25 between 125 for truthly motion of the servo motors. 
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pwm_value_1);//Passing pwm value to timer1 output pin
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pwm_value[0]);//Passing pwm value to timer1 output pin
 	  HAL_Delay(100);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm_value_2);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm_value[1]);
 	  HAL_Delay(100);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm_value_3);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, pwm_value[2]);
 	  HAL_Delay(100);	
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm_value_4);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, pwm_value[3]);
 	  HAL_Delay(100);
+		//int j;
+		//for(j=0;j<5;j++){
+		//	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_j, pwm_value[j]);//Passing pwm value to timer1 output pin
+	  //  HAL_Delay(100);
+		//}
+			
   }
   /* USER CODE END 3 */
 }
