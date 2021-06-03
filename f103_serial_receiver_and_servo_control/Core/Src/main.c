@@ -112,9 +112,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		
-	PWM_transmission(&htim2);
-	PWM_calculation();
-			
+	PWM_calculation(); // received servo data are converted to integer values
+	PWM_transmission(&htim2); // the converted values are transmitted to the motors
+	
   }
   /* USER CODE END 3 */
 }
