@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "rake_uart_servo.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -41,14 +41,14 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim2;
 
+TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
+Rake_Uart_HandleTypeDef ruart1;
+
 
 /* USER CODE BEGIN PV */
-int i =0,j,len,pwm_value[4];
-char buffer[50];
-char Rx_indx, Rx_data[2], Rx_Buffer[50], Transfer_cplt;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,29 +57,9 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
- void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	// *****RECEIVED DATA FORMAT: S111-222-333-444F ******// 
-	//bacic principle: Received data is taken by Rx_data one by one. After,these data add to Rx_buffer until the 'F' bit comes. 
-	uint8_t i;
-	if (huart->Instance == USART1)	//current UART
-		{
-		if (Rx_indx==0) {for (i=0;i<50;i++) Rx_Buffer[i]=0;}	//clear Rx_Buffer before receiving new data
 
-		if (Rx_data[0]!=70)	//if received data different from ascii 70('F')
-			{
-			Rx_Buffer[Rx_indx++]=Rx_data[0];	//add data to Rx_Buffer from Rx_data
-			}
-		else			//if received data = ascii 70('F')
-			{
-			Rx_indx=0;
-			Transfer_cplt=1;//transfer complete, data is ready to read
-			}
-
-		HAL_UART_Receive_IT(&huart1, (uint8_t*)Rx_data, 1);	//activate UART receive interrupt every time.
-		}
-
-}
+ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+ 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -119,11 +99,9 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	
-  HAL_UART_Receive_IT(&huart1,  (uint8_t*)Rx_data, 1);	//activate uart rx interrupt every time receiving 1 byte
-  HAL_TIM_PWM_Start( &htim2, TIM_CHANNEL_1);// starting PWM over timer 1
-	HAL_TIM_PWM_Start( &htim2, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start( &htim2, TIM_CHANNEL_3);
-	HAL_TIM_PWM_Start( &htim2, TIM_CHANNEL_4);
+  HAL_UART_Receive_IT(&huart1,  (uint8_t*)ruart1.Rx_data, 1);	//activate uart rx interrupt every time receiving 1 byte
+  PWM_start(&htim2); // starting PWM over timer 1
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,18 +112,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		
-		pwm_value[0]=((Rx_Buffer[1] - '0') * 100 )+((Rx_Buffer[2] - '0') * 10 )+(Rx_Buffer[3] - '0');
-		pwm_value[1]=((Rx_Buffer[5] - '0') * 100 )+((Rx_Buffer[6] - '0') * 10 )+(Rx_Buffer[7] - '0');
-		pwm_value[2]=((Rx_Buffer[9] - '0') * 100 )+((Rx_Buffer[10] - '0') * 10 )+(Rx_Buffer[11] - '0');
-		pwm_value[3]=((Rx_Buffer[13] - '0') * 100 )+((Rx_Buffer[14] - '0') * 10 )+(Rx_Buffer[15] - '0');
-		//PWM values must be 25 between 125 for truthly motion of the servo motors. 
-	
-		
-		int channel[4]={TIM_CHANNEL_1,TIM_CHANNEL_2,TIM_CHANNEL_3,TIM_CHANNEL_4};
-		for(j=0;j<4;j++){
-		__HAL_TIM_SET_COMPARE(&htim2, channel[j], pwm_value[j]);//Passing pwm value to timer1 output pin
-	  HAL_Delay(100);
-		}
+	PWM_transmission(&htim2);
+	PWM_calculation();
 			
   }
   /* USER CODE END 3 */
@@ -298,6 +266,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	// *****RECEIVED DATA FORMAT: S111-222-333-444F ******
+	//bacic principle: Received data is taken by Rx_data one by one. After,these data add to Rx_buffer until the 'F' bit comes. 
+	uint8_t i;
+	if (huart->Instance == USART1)	//current UART
+		{
+		if (ruart1.Rx_indx==0) {for (i=0;i<50;i++) ruart1.Rx_Buffer[i]=0;}	//clear Rx_Buffer before receiving new data
+
+		if (ruart1.Rx_data[0]!=70)	//if received data different from ascii 70('F')
+			{
+			ruart1.Rx_Buffer[ruart1.Rx_indx++]=ruart1.Rx_data[0];	//add data to Rx_Buffer from Rx_data
+			}
+		else			//if received data = ascii 70('F')
+			{
+			ruart1.Rx_indx=0;
+			ruart1.Transfer_cplt=1;//transfer complete, data is ready to read
+			}
+
+		HAL_UART_Receive_IT(&huart1, (uint8_t*)ruart1.Rx_data, 1);	//activate UART receive interrupt every time.
+		}
+} 
+
+
 
 /* USER CODE END 4 */
 

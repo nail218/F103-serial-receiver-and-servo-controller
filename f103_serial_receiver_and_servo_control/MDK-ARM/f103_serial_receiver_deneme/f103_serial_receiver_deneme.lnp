@@ -17,6 +17,7 @@
 "f103_serial_receiver_deneme\stm32f1xx_hal_flash_ex.o"
 "f103_serial_receiver_deneme\stm32f1xx_hal_exti.o"
 "f103_serial_receiver_deneme\stm32f1xx_hal_uart.o"
+"f103_serial_receiver_deneme\rake_uart_servo.o"
 "f103_serial_receiver_deneme\system_stm32f1xx.o"
 --library_type=microlib --strict --scatter "f103_serial_receiver_deneme\f103_serial_receiver_deneme.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
